@@ -1,21 +1,18 @@
 use email_news_subscription::configuration::{get_configuration, DatabaseSettings};
 use email_news_subscription::telemetry::{get_subscriber, ini_subscriber};
-use sqlx::{Connection, Executor, PgConnection, PgPool};
-use std::net::TcpListener;
 use once_cell::sync::Lazy;
 use secrecy::ExposeSecret;
+use sqlx::{Connection, Executor, PgConnection, PgPool};
+use std::net::TcpListener;
 use uuid::Uuid;
 
-
-
-static TRACING: Lazy<()> = Lazy::new(||{
+static TRACING: Lazy<()> = Lazy::new(|| {
     if std::env::var("TEST_LOG").is_ok() {
         let subscriber = get_subscriber("test".into(), "debug".into(), std::io::stdout);
         ini_subscriber(subscriber);
-    }else {
+    } else {
         let subscriber = get_subscriber("test".into(), "debug".into(), std::io::sink);
         ini_subscriber(subscriber);
-
     }
 });
 pub struct TestApp {
