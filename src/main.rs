@@ -2,6 +2,7 @@ use email_news_subscription::configuration::get_configuration;
 use email_news_subscription::startup::run;
 use email_news_subscription::telemetry::{get_subscriber, ini_subscriber};
 use secrecy::ExposeSecret;
+use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::net::TcpListener;
 
@@ -20,7 +21,9 @@ async fn main() -> std::io::Result<()> {
         "{}:{}",
         configuration.application.host, configuration.application.port
     );
-    let connection_pool = PgPool::connect_lazy(&configuration.database.conn_str().expose_secret())
+    let connection_pool = PgPoolOptions::new()
+        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy(&configuration.database.conn_str().expose_secret())
         .expect("Failed to connect to Postgres.");
     let listener = TcpListener::bind(address).expect("Failed to bind port 8080");
     run(listener, connection_pool)?.await
